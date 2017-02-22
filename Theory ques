@@ -1,0 +1,8 @@
+1)Explain High Availabilty of Name node
+Ans-A pair of active-standby name nodes is the basis of high availabilty.
+On failure of 1 node(active node), the standby takes its place without interruption.
+The active node and standby node take the responsibilty of handling edit-logs alternatively.
+In HDFS High Availability,cluster is available even if all namenodes go down.
+
+
+2)
