@@ -2,7 +2,60 @@
 Ans-A pair of active-standby name nodes is the basis of high availabilty.
 On failure of 1 node(active node), the standby takes its place without interruption.
 The active node and standby node take the responsibilty of handling edit-logs alternatively.
+When any namespace modification is performed by the Active node, it modifies the edit log file stored in the shared directory.
+The Standby node is constantly watching this directory for edits, and as it sees the edits, it applies them to its own namespace. 
+In the event of a failover, the Standby will ensure that it has read all of the edits from the shared storage before promoting itself to the Active state. 
+This ensures that the namespace state is fully synchronized before a failover occurs.
 In HDFS High Availability,cluster is available even if all namenodes go down.
 
 
-2)
+2)CheckPointing and how it is useful:
+The namenode stores data in the form of metadata.
+When any operation takes place in HDFS, the directory structure gets modified
+These modifications are stored in the memory as well as in the edits files (edits
+files are stored on the hard disk)
+If the existing fsimage file gets merged with edits, we’ll get an updated fsimage
+file
+This process is called “checkpointing” and is carried out by the Secondary
+NameNode. It takes the fsimage and edits files from the NameNode and returns
+updated fsimage file after merging
+All activities are stored in the edit logs.
+It is kept in the memory harddisk and RAM but multiple versions are saved on the disk.
+fsimage contains the HDFS metadata and edits contain the changes in the
+HDFS metadata. To get the exact view of the HDFS structure, both must be
+merged. At the time when a NameNode restarts, it merges both of them, as it
+needs to store this information in memory. Since edits can become very large
+with time, a NameNode’s startup time can become very lengthy. So, it is good to
+have them merged periodically.
+However clusters come down one's in every 24 hrs.
+This is a long time for the FSImage to be updated.
+The explicit merging of editlogs into FSImage is called checkpoint.
+This is done with a span of 1-2 hrs.
+
+3)HDFS federation
+NameNode is a single point of failure.
+A secondary NameNode cannot act as a NameNode, as it should be on a high-end machine.
+In the HDFS Federation, we use multiple NameNodes, each storing the fsimage,
+edits.
+In the HDFS Federation, there are multiple NameNodes, each storing the metadata.
+Blocks for files belonging to a namespace is called a block pool.
+If one NameNode fails, a namespace volume managed by an other namenode is still
+accessible. So the entire cluster doesn’t become inaccessible.
+
+
+4)Mandatory configuration files
+On installing the hadoop tar file with default settings a standalone mode is obtained.
+The configuration files are .xml file which give the properties defined by apache.
+The four files that need to be configured explicitly are-
+1)Core-site.xml
+2)HDFS-site.xml
+3)YARN-site.xml
+4)xml
+We can override the default properties by configuring the above .xml files.
+For example , the default replication factor(3) can be configured using hdfs-site.xml
+The core-site.xml includes-
+Some of the important properties are:
+
+Configuring the name node address
+Configuring the rack awareness factor
+Selecting the type of security
